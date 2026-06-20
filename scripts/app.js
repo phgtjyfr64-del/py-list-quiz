@@ -158,74 +158,90 @@
       </section>
     `;
 
-    // 渲染选项
+    // 用事件委托：把点击事件挂到 stage 容器上（只挂一次，每次重渲染都生效）
     const optsList = document.getElementById('options-list');
     q.options.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'option';
       btn.dataset.key = opt.key;
       btn.innerHTML = opt.text;
-      btn.addEventListener('click', () => onSelectOption(btn, opt.key));
+      // 直接绑 click（防止冒泡问题），并用 data-key 索引
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        onSelectOption(btn, opt.key);
+      });
       optsList.appendChild(btn);
     });
 
-    document.getElementById('btn-submit').addEventListener('click', onSubmit);
-    document.getElementById('btn-explain').addEventListener('click', onExplain);
-    document.getElementById('btn-next').addEventListener('click', onNext);
-    document.getElementById('btn-exit').addEventListener('click', () => navigate('#/map'));
+    // 提交/解析/下一题 按钮
+    document.getElementById('btn-submit').addEventListener('click', (e) => { e.stopPropagation(); onSubmit(); });
+    document.getElementById('btn-explain').addEventListener('click', (e) => { e.stopPropagation(); onExplain(); });
+    document.getElementById('btn-next').addEventListener('click', (e) => { e.stopPropagation(); onNext(); });
+    document.getElementById('btn-exit').addEventListener('click', (e) => { e.stopPropagation(); navigate('#/map'); });
   }
 
   function onSelectOption(btn, key) {
-    if (state.submitted) return;
-    const q = state.questions[state.currentIdx];
-    if (q.type === 'multi') {
-      // 多选（暂未启用，留接口）
-      if (state.selected.has(key)) state.selected.delete(key);
-      else state.selected.add(key);
-      btn.classList.toggle('selected', state.selected.has(key));
-    } else {
-      state.selected.clear();
-      state.selected.add(key);
-      document.querySelectorAll('.option').forEach(b => {
-        b.classList.toggle('selected', b.dataset.key === key);
-      });
+    try {
+      if (state.submitted) return;
+      const q = state.questions[state.currentIdx];
+      if (!q) { console.warn('题目为空', state.currentIdx); return; }
+      if (q.type === 'multi') {
+        if (state.selected.has(key)) state.selected.delete(key);
+        else state.selected.add(key);
+        btn.classList.toggle('selected', state.selected.has(key));
+      } else {
+        state.selected.clear();
+        state.selected.add(key);
+        document.querySelectorAll('.option').forEach(b => {
+          b.classList.toggle('selected', b.dataset.key === key);
+        });
+      }
+      const submitBtn = document.getElementById('btn-submit');
+      if (submitBtn) submitBtn.disabled = state.selected.size === 0;
+    } catch (err) {
+      console.error('onSelectOption 异常:', err);
     }
-    document.getElementById('btn-submit').disabled = state.selected.size === 0;
   }
 
   function onSubmit() {
-    if (state.selected.size === 0) return;
-    state.submitted = true;
-    const q = state.questions[state.currentIdx];
-    const correctKeys = new Set(q.answer);
-    const userKeys = state.selected;
-    const isCorrect = userKeys.size === correctKeys.size && [...userKeys].every(k => correctKeys.has(k));
+    try {
+      if (state.selected.size === 0) return;
+      state.submitted = true;
+      const q = state.questions[state.currentIdx];
+      if (!q) { console.error('提交时题目为空'); return; }
+      const correctKeys = new Set(q.answer);
+      const userKeys = state.selected;
+      const isCorrect = userKeys.size === correctKeys.size && [...userKeys].every(k => correctKeys.has(k));
 
-    // 标记选项
-    document.querySelectorAll('.option').forEach(btn => {
-      btn.setAttribute('aria-disabled', 'true');
-      if (correctKeys.has(btn.dataset.key)) btn.classList.add('correct');
-      if (userKeys.has(btn.dataset.key) && !correctKeys.has(btn.dataset.key)) btn.classList.add('wrong');
-    });
+      // 标记选项
+      document.querySelectorAll('.option').forEach(btn => {
+        btn.setAttribute('aria-disabled', 'true');
+        if (correctKeys.has(btn.dataset.key)) btn.classList.add('correct');
+        if (userKeys.has(btn.dataset.key) && !correctKeys.has(btn.dataset.key)) btn.classList.add('wrong');
+      });
 
-    // 反馈
-    const fb = document.getElementById('feedback');
-    if (isCorrect) {
-      fb.innerHTML = '<i class="fa-solid fa-circle-check"></i> 答对啦！';
-      fb.className = 'feedback right';
-      state.correctCount++;
-      launchConfetti();
-    } else {
-      fb.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 答错了，正确答案是 <strong>${[...correctKeys].join('、')}</strong>`;
-      fb.className = 'feedback wrong';
-      state.wrongQuestions.push({ id: q.id, topicId: q.topicId, prompt: q.prompt, userAns: [...userKeys], rightAns: [...correctKeys], code: q.code, ts: Date.now() });
+      // 反馈
+      const fb = document.getElementById('feedback');
+      if (isCorrect) {
+        fb.innerHTML = '<i class="fa-solid fa-circle-check"></i> 答对啦！';
+        fb.className = 'feedback right';
+        state.correctCount++;
+        launchConfetti();
+      } else {
+        fb.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> 答错了，正确答案是 <strong>${[...correctKeys].join('、')}</strong>`;
+        fb.className = 'feedback wrong';
+        state.wrongQuestions.push({ id: q.id, topicId: q.topicId, prompt: q.prompt, userAns: [...userKeys], rightAns: [...correctKeys], code: q.code, ts: Date.now() });
+        console.log('已记录错题:', q.id, '，当前轮累计', state.wrongQuestions.length);
+      }
+
+      // 切换按钮
+      document.getElementById('btn-submit').style.display = 'none';
+      document.getElementById('btn-explain').style.display = 'inline-flex';
+      document.getElementById('btn-next').style.display = 'inline-flex';
+      document.getElementById('btn-explain').textContent = isCorrect ? '📖 看看解析' : '💡 看图解，搞懂它';
+    } catch (err) {
+      console.error('onSubmit 异常:', err);
     }
-
-    // 切换按钮
-    document.getElementById('btn-submit').style.display = 'none';
-    document.getElementById('btn-explain').style.display = 'inline-flex';
-    document.getElementById('btn-next').style.display = 'inline-flex';
-    document.getElementById('btn-explain').textContent = isCorrect ? '📖 看看解析' : '💡 看图解，搞懂它';
   }
 
   function onExplain() {
@@ -245,20 +261,26 @@
   }
 
   function finishPlay() {
-    state.endTime = Date.now();
-    // 持久化
-    const progress = loadProgress();
-    progress.byTopic = progress.byTopic || {};
-    const tId = state.topicId;
-    if (!progress.byTopic[tId]) progress.byTopic[tId] = { done: 0, correct: 0 };
-    progress.byTopic[tId].done += state.questions.length;
-    progress.byTopic[tId].correct += state.correctCount;
-    // 错题合集
-    progress.wrongList = (progress.wrongList || []).concat(state.wrongQuestions);
-    // 限制错题本大小
-    if (progress.wrongList.length > 200) progress.wrongList = progress.wrongList.slice(-200);
-    saveProgress(progress);
-    navigate('#/result');
+    try {
+      state.endTime = Date.now();
+      // 持久化
+      const progress = loadProgress();
+      progress.byTopic = progress.byTopic || {};
+      const tId = state.topicId;
+      if (!progress.byTopic[tId]) progress.byTopic[tId] = { done: 0, correct: 0 };
+      progress.byTopic[tId].done += state.questions.length;
+      progress.byTopic[tId].correct += state.correctCount;
+      // 错题合集
+      progress.wrongList = (progress.wrongList || []).concat(state.wrongQuestions);
+      // 限制错题本大小
+      if (progress.wrongList.length > 200) progress.wrongList = progress.wrongList.slice(-200);
+      const ok = saveProgress(progress);
+      console.log('本轮结束，已保存进度 ok=' + ok + '，本轮错题 ' + state.wrongQuestions.length + '，累计错题 ' + progress.wrongList.length);
+      navigate('#/result');
+    } catch (err) {
+      console.error('finishPlay 异常:', err);
+      navigate('#/result');
+    }
   }
 
   // ============ 视图：结算页 ============
@@ -340,6 +362,7 @@
   function renderReview() {
     const progress = loadProgress();
     const list = (progress.wrongList || []).slice().reverse();
+    console.log('错题本加载：累计错题数 =', list.length);
     stage.innerHTML = `
       <section class="review-wrap">
         <div class="review-hero">

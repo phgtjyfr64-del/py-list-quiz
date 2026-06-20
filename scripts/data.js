@@ -463,7 +463,7 @@
       code: 'a = [1, 2, 2, 3, 2]',
       options: [
         { key: 'A', text: '查找 x 第一次出现的<strong>位置</strong>' },
-        { key: 'B', text: '<strong>统计 x 出现的<strong>次数</strong></strong>' },
+        { key: 'B', text: '<strong>统计 x 出现的「次数」</strong>' },
         { key: 'C', text: '把 x 加到列表末尾' },
         { key: 'D', text: '删除所有 x' }
       ],
@@ -483,7 +483,7 @@
       code: 'a = [1, 2, 3]\nfor i in a:\n    print(i)',
       options: [
         { key: 'A', text: '1 2 3（横着）' },
-        { key: 'B', text: '<strong>1\n2\n3</strong>（每个一行）' },
+        { key: 'B', text: '<strong>1<br>2<br>3</strong>（每个一行）' },
         { key: 'C', text: 'a' },
         { key: 'D', text: '报错' }
       ],
@@ -868,7 +868,8 @@
     } catch { return { byTopic: {}, wrongList: [] }; }
   }
   function saveProgress(p) {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); } catch {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); return true; }
+    catch (err) { console.error('localStorage 保存失败:', err); return false; }
   }
 
   // 暴露到全局
