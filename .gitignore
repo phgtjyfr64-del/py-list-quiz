@@ -1,0 +1,12 @@
+# 开发/部署相关
+.DS_Store
+*.log
+.vscode/
+.idea/
+
+# Trae 内部文档（不上传到公开仓库）
+.trae/
+
+# 临时/测试文件
+_*.js
+*.tmp

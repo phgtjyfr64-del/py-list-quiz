@@ -1,0 +1,182 @@
+/* ============ 图解 SVG 通用 ============ */
+.diagram {
+  width: 100%;
+  max-width: 100%;
+  font-family: var(--f-mono);
+  user-select: none;
+}
+
+/* 列表格（核心：每个元素一个格） */
+.dg-cell {
+  fill: #fff;
+  stroke: #94a3b8;
+  stroke-width: 2;
+  transition: fill 0.3s ease, stroke 0.3s ease, transform 0.3s ease;
+}
+.dg-cell.hi {
+  fill: #FFE066;
+  stroke: #b8860b;
+  stroke-width: 3;
+}
+.dg-cell.hi-success { fill: #6EE7B7; stroke: #047857; }
+.dg-cell.hi-error { fill: #FCA5A5; stroke: #b91c1c; }
+.dg-cell.new { fill: #FBCFE8; stroke: #be185d; stroke-dasharray: 4 3; }
+.dg-cell.gone { fill: #F1F5F9; stroke: #cbd5e1; stroke-dasharray: 3 3; }
+
+.dg-text {
+  font-family: var(--f-mono);
+  font-size: 18px;
+  font-weight: 600;
+  fill: #1F2A44;
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+.dg-text.str { fill: #047857; font-style: italic; }
+.dg-text.num { fill: #c2410c; }
+.dg-text.bool { fill: #7c3aed; }
+.dg-text.cross {
+  fill: #b91c1c;
+  font-size: 26px;
+  text-decoration: line-through;
+  font-weight: 800;
+}
+
+.dg-idx {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  fill: #64748b;
+  text-anchor: middle;
+}
+.dg-idx.fwd { /* 正向索引 */ }
+.dg-idx.rev { fill: #b45309; }
+.dg-idx.active { fill: #1f5380; font-weight: 800; font-size: 14px; }
+
+.dg-bracket {
+  font-family: var(--f-mono);
+  font-size: 56px;
+  font-weight: 700;
+  fill: #3776AB;
+}
+
+.dg-arrow {
+  stroke: #b45309;
+  stroke-width: 3;
+  fill: none;
+  marker-end: url(#arrowhead);
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: drawArrow 0.8s ease forwards;
+}
+@keyframes drawArrow { to { stroke-dashoffset: 0; } }
+
+.dg-callout {
+  font-family: 'Baloo 2', 'Noto Sans SC', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  fill: #b45309;
+}
+.dg-callout-bg {
+  fill: #FEF3C7;
+  stroke: #b45309;
+  stroke-width: 2;
+  stroke-dasharray: 4 3;
+}
+
+.dg-arrow-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 800;
+  fill: #b45309;
+}
+
+.dg-title {
+  font-family: 'ZCOOL KuaiLe', 'Baloo 2', sans-serif;
+  font-size: 18px;
+  fill: #1f5380;
+}
+
+.dg-legend {
+  font-family: 'Baloo 2', 'Noto Sans SC', sans-serif;
+  font-size: 12px;
+  fill: #475569;
+}
+
+/* 矩阵格（行/列） */
+.dg-matrix-cell {
+  fill: #fff;
+  stroke: #94a3b8;
+  stroke-width: 1.5;
+  transition: all 0.3s ease;
+}
+.dg-matrix-cell.hi {
+  fill: #FFE066;
+  stroke: #b8860b;
+  stroke-width: 3;
+}
+.dg-row-label, .dg-col-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  fill: #64748b;
+  text-anchor: middle;
+  font-weight: 700;
+}
+
+/* 集合（in / not in） */
+.dg-set-bg {
+  fill: #E1EFFF;
+  stroke: #3776AB;
+  stroke-width: 2;
+}
+.dg-set-bg.outside { fill: #fef3c7; stroke: #b45309; }
+.dg-set-bg.match { fill: #d1fae5; stroke: #047857; stroke-width: 3; }
+.dg-set-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 700;
+  fill: #1f5380;
+  text-anchor: middle;
+}
+.dg-set-elem {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  fill: #1F2A44;
+  text-anchor: middle;
+}
+.dg-yesno {
+  font-family: 'ZCOOL KuaiLe', sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  text-anchor: middle;
+}
+.dg-yesno.yes { fill: #047857; }
+.dg-yesno.no { fill: #b91c1c; }
+
+/* 排序前后 */
+.dg-arrow-big {
+  stroke: #3776AB;
+  stroke-width: 3;
+  fill: none;
+  marker-end: url(#big-arrow);
+}
+
+/* 遍历动画箭头 */
+.dg-traverse {
+  stroke: #8B5CF6;
+  stroke-width: 2.5;
+  fill: none;
+  stroke-dasharray: 4 4;
+  animation: traverseMove 1.2s linear infinite;
+}
+@keyframes traverseMove {
+  to { stroke-dashoffset: -16; }
+}
+
+/* 图解标题区 */
+.diagram-title {
+  font-family: 'ZCOOL KuaiLe', sans-serif;
+  font-size: 1.05rem;
+  color: var(--c-primary-dark);
+  text-align: center;
+  margin-bottom: 10px;
+}

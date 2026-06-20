@@ -1,0 +1,513 @@
+/* ============ 知识地图（关卡选择页） ============ */
+.map-hero {
+  text-align: center;
+  padding: 24px 16px 36px;
+  position: relative;
+}
+.map-hero h1 {
+  font-family: var(--f-display);
+  font-size: 2.6rem;
+  color: var(--c-primary-dark);
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  position: relative;
+  display: inline-block;
+}
+.map-hero h1::after {
+  content: '';
+  position: absolute;
+  bottom: -10px; left: 50%;
+  transform: translateX(-50%);
+  width: 80px; height: 4px;
+  background: linear-gradient(90deg, var(--c-accent), var(--c-primary));
+  border-radius: 4px;
+}
+.map-hero .subtitle {
+  margin-top: 18px;
+  color: var(--c-ink-soft);
+  font-size: 1.05rem;
+  font-weight: 500;
+}
+.map-hero .quickstart {
+  margin-top: 22px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.topic-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+  margin-top: 16px;
+}
+
+.topic-card {
+  position: relative;
+  background: var(--c-card);
+  border-radius: var(--r-lg);
+  padding: 20px 20px 18px;
+  box-shadow: var(--shadow-sm);
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+  animation: cardIn 0.5s ease backwards;
+}
+.topic-card::before {
+  content: '';
+  position: absolute;
+  top: -20px; right: -20px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  background: var(--card-color, var(--c-primary-light));
+  opacity: 0.4;
+  z-index: 0;
+  transition: transform 0.3s ease;
+}
+.topic-card:hover {
+  transform: translateY(-6px) rotate(-0.5deg);
+  box-shadow: var(--shadow-md);
+  border-color: var(--card-color, var(--c-primary));
+}
+.topic-card:hover::before { transform: scale(1.4); }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.topic-card .icon-wrap {
+  width: 52px; height: 52px;
+  border-radius: 16px;
+  background: var(--card-color, var(--c-primary));
+  color: #fff;
+  font-size: 1.4rem;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; z-index: 1;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+.topic-card h3 {
+  font-family: var(--f-display);
+  font-size: 1.2rem;
+  color: var(--c-ink);
+  position: relative; z-index: 1;
+}
+.topic-card .desc {
+  font-size: 0.9rem;
+  color: var(--c-ink-soft);
+  line-height: 1.5;
+  position: relative; z-index: 1;
+}
+.topic-card .meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  position: relative; z-index: 1;
+}
+.topic-card .progress-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--c-paper-edge);
+  color: var(--c-ink-soft);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: var(--r-pill);
+}
+.topic-card .progress-pill.has-progress { background: var(--c-success-light); color: #047857; }
+.topic-card .arrow {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--card-color, var(--c-primary));
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem;
+  transition: transform 0.2s ease;
+}
+.topic-card:hover .arrow { transform: translateX(4px) rotate(-45deg); }
+
+/* ============ 答题页 ============ */
+.quiz-wrap {
+  max-width: 900px;
+  margin: 0 auto;
+}
+.quiz-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.quiz-top .topic-name {
+  font-family: var(--f-display);
+  font-size: 1.3rem;
+  color: var(--c-primary-dark);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.quiz-top .topic-name .topic-icon {
+  width: 36px; height: 36px;
+  border-radius: 12px;
+  background: var(--c-accent);
+  color: var(--c-ink);
+  display: inline-flex;
+  align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.progress-bar {
+  flex: 1;
+  min-width: 200px;
+  height: 10px;
+  background: rgba(55, 118, 171, 0.12);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  position: relative;
+}
+.progress-bar .fill {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--c-primary), var(--c-purple));
+  border-radius: var(--r-pill);
+  transform-origin: left;
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.quiz-top .counter {
+  font-family: var(--f-mono);
+  font-size: 0.95rem;
+  color: var(--c-ink-soft);
+  font-weight: 600;
+  background: var(--c-card);
+  padding: 6px 14px;
+  border-radius: var(--r-pill);
+  box-shadow: var(--shadow-sm);
+}
+
+.quiz-card {
+  background: var(--c-card);
+  border-radius: var(--r-lg);
+  padding: 28px 32px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+.quiz-card .difficulty {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 12px;
+  border-radius: var(--r-pill);
+  background: var(--c-paper-edge);
+  color: var(--c-ink-soft);
+  margin-bottom: 12px;
+}
+.quiz-card .difficulty.lv1 { background: #d1fae5; color: #047857; }
+.quiz-card .difficulty.lv2 { background: #fef3c7; color: #b45309; }
+.quiz-card .difficulty.lv3 { background: #fee2e2; color: #b91c1c; }
+
+.quiz-card .prompt {
+  font-size: 1.15rem;
+  line-height: 1.65;
+  color: var(--c-ink);
+  margin-bottom: 18px;
+  font-weight: 500;
+}
+.quiz-card .code-block { margin-bottom: 18px; }
+
+.options-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 18px;
+}
+@media (max-width: 640px) { .options-list { grid-template-columns: 1fr; } }
+
+.option {
+  position: relative;
+  background: #fff;
+  border: 2.5px solid #e2e8f0;
+  border-radius: var(--r-md);
+  padding: 14px 18px 14px 56px;
+  font-size: 1rem;
+  text-align: left;
+  color: var(--c-ink);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.option::before {
+  content: attr(data-key);
+  position: absolute;
+  top: 12px; left: 12px;
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: var(--c-primary-light);
+  color: var(--c-primary-dark);
+  font-weight: 800;
+  font-family: var(--f-mono);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s ease;
+}
+.option:hover {
+  border-color: var(--c-primary);
+  background: var(--c-primary-light);
+  transform: translateX(4px);
+}
+.option:hover::before { background: var(--c-primary); color: #fff; }
+.option.selected {
+  border-color: var(--c-primary);
+  background: var(--c-primary-light);
+}
+.option.selected::before { background: var(--c-primary); color: #fff; }
+.option.correct {
+  border-color: var(--c-success);
+  background: var(--c-success-light);
+  animation: bounceIn 0.5s ease;
+}
+.option.correct::before { background: var(--c-success); color: #fff; content: '✓'; }
+.option.wrong {
+  border-color: var(--c-error);
+  background: var(--c-error-light);
+  animation: shake 0.5s ease;
+}
+.option.wrong::before { background: var(--c-error); color: #fff; content: '✗'; }
+.option:disabled, .option[aria-disabled="true"] { cursor: default; }
+
+@keyframes bounceIn {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+  100% { transform: scale(1); }
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+
+.quiz-actions {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.quiz-actions .feedback {
+  font-size: 1rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.quiz-actions .feedback.right { color: var(--c-success); }
+.quiz-actions .feedback.wrong { color: var(--c-error); }
+
+/* ============ 结算页 ============ */
+.result-wrap {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+.result-card {
+  background: var(--c-card);
+  border-radius: var(--r-lg);
+  padding: 36px 32px 28px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+.result-card::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -10%;
+  width: 120%; height: 200%;
+  background: radial-gradient(circle, rgba(255, 212, 59, 0.18) 0%, transparent 60%);
+  pointer-events: none;
+}
+.trophy {
+  font-size: 4.5rem;
+  display: inline-block;
+  animation: trophyBounce 1.2s ease;
+  filter: drop-shadow(0 6px 8px rgba(0,0,0,0.1));
+}
+@keyframes trophyBounce {
+  0% { transform: scale(0) rotate(-30deg); }
+  60% { transform: scale(1.2) rotate(10deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+.result-score {
+  font-family: var(--f-display);
+  font-size: 3.6rem;
+  color: var(--c-primary-dark);
+  line-height: 1;
+  margin: 14px 0 4px;
+  position: relative;
+}
+.result-score .total { color: var(--c-muted); font-size: 1.6rem; }
+.result-grade {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--c-accent-dark);
+  margin-bottom: 6px;
+  position: relative;
+}
+.result-stats {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 18px 0 8px;
+  flex-wrap: wrap;
+  position: relative;
+}
+.stat-chip {
+  background: var(--c-primary-light);
+  color: var(--c-primary-dark);
+  padding: 8px 18px;
+  border-radius: var(--r-pill);
+  font-size: 0.95rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.stat-chip.success { background: var(--c-success-light); color: #047857; }
+.stat-chip.error { background: var(--c-error-light); color: #b91c1c; }
+.stat-chip.time { background: #ede9fe; color: #6d28d9; }
+
+.result-actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative;
+}
+
+.wrong-list {
+  margin-top: 28px;
+  background: var(--c-card);
+  border-radius: var(--r-lg);
+  padding: 24px 28px;
+  box-shadow: var(--shadow-md);
+  text-align: left;
+}
+.wrong-list h3 {
+  font-family: var(--f-display);
+  font-size: 1.4rem;
+  color: var(--c-primary-dark);
+  margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.wrong-list .empty {
+  text-align: center;
+  color: var(--c-muted);
+  padding: 20px 0;
+  font-size: 1rem;
+}
+.wrong-item {
+  border: 2px solid #f1f5f9;
+  border-radius: var(--r-md);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: #fff;
+  transition: all 0.2s ease;
+}
+.wrong-item:hover {
+  border-color: var(--c-primary);
+  background: var(--c-primary-light);
+}
+.wrong-item .wi-topic {
+  font-size: 0.78rem;
+  color: var(--c-ink-soft);
+  font-weight: 700;
+  background: var(--c-paper-edge);
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+  display: inline-block;
+  margin-bottom: 6px;
+}
+.wrong-item .wi-prompt {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 4px 0 8px;
+  color: var(--c-ink);
+}
+.wrong-item .wi-ans {
+  font-size: 0.9rem;
+  color: var(--c-ink-soft);
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.wrong-item .wi-ans .you { color: var(--c-error); }
+.wrong-item .wi-ans .right { color: var(--c-success); }
+
+/* ============ 错题本页 ============ */
+.review-wrap {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.review-hero {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.review-hero h1 {
+  font-family: var(--f-display);
+  font-size: 2.2rem;
+  color: var(--c-primary-dark);
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+.review-hero p {
+  color: var(--c-ink-soft);
+  font-size: 1rem;
+}
+.review-list { display: flex; flex-direction: column; gap: 12px; }
+.review-item {
+  background: var(--c-card);
+  border-radius: var(--r-md);
+  padding: 16px 20px;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+}
+.review-item:hover {
+  border-color: var(--c-primary);
+  transform: translateX(4px);
+}
+.review-item .ri-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.review-item .ri-tag {
+  background: var(--c-paper-edge);
+  color: var(--c-ink-soft);
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: var(--r-pill);
+}
+.review-item .ri-date {
+  font-size: 0.8rem;
+  color: var(--c-muted);
+}
+.review-item .ri-prompt {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--c-ink);
+}
