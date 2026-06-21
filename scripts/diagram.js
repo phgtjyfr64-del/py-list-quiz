@@ -89,17 +89,12 @@
   // ============ 2) 索引 ============
   function diagramIndexing(d) {
     const items = d.list || [];
+    // renderCells 本身就会在每个格子下方画"正向索引 + 反向索引"，不需要额外再加
     const c = renderCells(items, { highlight: d.highlight, showIndices: true });
-    // 找高亮单元格的中心
-    const hiIdx = d.highlight >= 0 ? d.highlight : items.length + d.highlight;
-    const cx = c.startX + hiIdx * (c.cellW + c.gap) + c.cellW / 2;
-    const cy = c.cellY + c.cellH + 50;
     return wrapSvg(`
       <text class="dg-title" x="320" y="28">${escapeXml(d.label || `a[${d.highlight}]`)}</text>
       <text class="dg-idx fwd" x="320" y="50" text-anchor="middle" font-weight="800">正向索引</text>
       ${c.body}
-      <text class="dg-callout" x="${cx}" y="${cy - 8}" text-anchor="middle">${escapeXml(d.label || '')}</text>
-      <path class="dg-arrow" d="M ${cx} ${cy - 4} Q ${cx} ${cy + 12} ${cx} ${c.cellY + c.cellH + 4}" />
     `);
   }
 

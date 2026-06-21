@@ -32,6 +32,7 @@
     }
     if (parts[0] === 'result') return { route: 'result' };
     if (parts[0] === 'review') return { route: 'review' };
+    if (parts[0] === 'teacher') return { route: 'teacher' };
     return { route: 'map' };
   }
 
@@ -40,6 +41,11 @@
     state.route = r.route;
     if (r.topicId) state.topicId = r.topicId;
     updateNav();
+    // 老师后台单独接管 stage
+    if (state.route === 'teacher' && window.PyListApp && window.PyListApp.tryHandleTeacherRoute) {
+      window.PyListApp.tryHandleTeacherRoute('teacher');
+      return;
+    }
     if (state.route === 'map') renderMap();
     else if (state.route === 'play') renderPlay();
     else if (state.route === 'result') renderResult();
@@ -58,14 +64,37 @@
   // ============ 视图：知识地图 ============
   function renderMap() {
     const progress = loadProgress();
+    // 累计进度汇总
+    let totalDone = 0, totalCorrect = 0;
+    const doneTopics = [];
+    Object.entries(progress.byTopic || {}).forEach(([tId, t]) => {
+      if (t.done > 0) {
+        totalDone += t.done;
+        totalCorrect += t.correct;
+        doneTopics.push(tId);
+      }
+    });
+    const hasProgress = totalDone > 0;
+    const overallPct = totalDone ? Math.round(totalCorrect / totalDone * 100) : 0;
+
     stage.innerHTML = `
       <section class="map-hero">
         <h1>🐍 Python 列表 · 闯关大冒险</h1>
-        <p class="subtitle">12 个知识点 · 44 道图解题 · 玩着学才记得住！</p>
+        <p class="subtitle">13 个知识点 · 44 道图解题 · 玩着学才记得住！</p>
+        ${hasProgress ? `
+          <div class="overall-progress">
+            <div class="op-text">累计：<b>${totalDone}</b> 题 · 答对 <b>${totalCorrect}</b> · 正确率 <b>${overallPct}%</b></div>
+            <div class="op-bar"><div class="op-fill" style="width:${overallPct}%"></div></div>
+          </div>
+        ` : ''}
         <div class="quickstart">
           <button class="btn btn-accent" id="btn-start-all">🚀 全部闯关</button>
-          <button class="btn btn-ghost" id="btn-review">📒 看看错题本</button>
+          <button class="btn btn-ghost" id="btn-review">📒 错题本</button>
+          <button class="btn btn-submit-big" id="btn-submit-big" ${hasProgress ? '' : 'disabled'}>
+            <i class="fa-solid fa-paper-plane"></i> 提交成绩给老师
+          </button>
         </div>
+        ${!hasProgress ? '<p class="qs-hint">👆 做完几道题后，"提交成绩"按钮就会亮起来</p>' : ''}
       </section>
       <section class="topic-grid" id="topic-grid"></section>
     `;
@@ -97,6 +126,16 @@
 
     document.getElementById('btn-start-all').addEventListener('click', () => navigate('#/play/all'));
     document.getElementById('btn-review').addEventListener('click', () => navigate('#/review'));
+    const submitBig = document.getElementById('btn-submit-big');
+    if (submitBig) {
+      submitBig.addEventListener('click', () => {
+        if (submitBig.disabled) {
+          showToast('先做几道题再来提交吧～');
+        } else {
+          openSubmitReportModal();
+        }
+      });
+    }
   }
 
   // ============ 视图：闯关答题 ============
@@ -147,7 +186,7 @@
           <div class="options-list" id="options-list"></div>
           <div class="quiz-actions">
             <div class="feedback" id="feedback"></div>
-            <div style="display:flex; gap:8px;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
               <button class="btn btn-ghost" id="btn-exit"><i class="fa-solid fa-xmark"></i> 退出</button>
               <button class="btn btn-primary" id="btn-submit" disabled>提交答案</button>
               <button class="btn btn-accent" id="btn-explain" style="display:none;"><i class="fa-solid fa-lightbulb"></i> 看图解</button>
@@ -158,20 +197,31 @@
       </section>
     `;
 
-    // 用事件委托：把点击事件挂到 stage 容器上（只挂一次，每次重渲染都生效）
+    // 用事件委托 + 直接绑的双保险：直接绑到按钮，stage 上也兜底
     const optsList = document.getElementById('options-list');
     q.options.forEach(opt => {
       const btn = document.createElement('button');
       btn.className = 'option';
+      btn.type = 'button';
       btn.dataset.key = opt.key;
       btn.innerHTML = opt.text;
-      // 直接绑 click（防止冒泡问题），并用 data-key 索引
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
         onSelectOption(btn, opt.key);
       });
       optsList.appendChild(btn);
     });
+
+    // 兜底：stage 上事件委托（万一有按钮事件没绑上）
+    if (!stage._optionsDelegateBound) {
+      stage.addEventListener('click', (e) => {
+        const target = e.target.closest('.option');
+        if (!target) return;
+        const key = target.dataset.key;
+        if (key) onSelectOption(target, key);
+      });
+      stage._optionsDelegateBound = true;
+    }
 
     // 提交/解析/下一题 按钮
     document.getElementById('btn-submit').addEventListener('click', (e) => { e.stopPropagation(); onSubmit(); });
@@ -182,6 +232,7 @@
 
   function onSelectOption(btn, key) {
     try {
+      console.log('[option] 点击', { key, submitted: state.submitted, qid: state.questions[state.currentIdx] && state.questions[state.currentIdx].id, selected: Array.from(state.selected) });
       if (state.submitted) return;
       const q = state.questions[state.currentIdx];
       if (!q) { console.warn('题目为空', state.currentIdx); return; }
@@ -316,6 +367,7 @@
             <button class="btn btn-primary" id="btn-retry"><i class="fa-solid fa-rotate"></i> 再来一次</button>
             <button class="btn btn-ghost" id="btn-back-map"><i class="fa-solid fa-map"></i> 返回地图</button>
             ${wrong > 0 ? '<button class="btn btn-accent" id="btn-review-wrong"><i class="fa-solid fa-bookmark"></i> 复习错题</button>' : ''}
+            <button class="btn btn-accent" id="btn-report" style="background:linear-gradient(135deg,#F97316,#EC4899);color:#fff;"><i class="fa-solid fa-paper-plane"></i> 生成成绩单</button>
           </div>
         </div>
         <div class="wrong-list" id="wrong-list">
@@ -356,6 +408,206 @@
         if (q) openExplainModal(q);
       });
     });
+
+    // 生成成绩单
+    const br = document.getElementById('btn-report');
+    if (br) br.addEventListener('click', openReportModal);
+  }
+
+  // ============ 报告生成 ============
+  // 报告数据源：当前 session 状态 或 localStorage 累计进度
+  // 根据当前所在页面，选用不同源
+  function _getReportSource() {
+    // 当前 session（学生正在答题 result/play 都算）
+    if ((state.route === 'result' || state.route === 'play') && state.questions && state.questions.length) {
+      // 答题中：已答部分
+      const partial = state.currentIdx + (state.submitted ? 1 : 0);
+      const correctSoFar = state.correctCount;
+      const wrongSoFar = state.wrongQuestions.length;
+      // 答题中：只统计"已答"那部分
+      const handledTotal = state.submitted
+        ? state.questions.length   // result 页：全部算
+        : partial;                // play 页：只算已答
+      const handledCorrect = correctSoFar;
+      const handledWrong = wrongSoFar;
+      return {
+        kind: state.submitted ? 'session-done' : 'session-partial',
+        topicId: state.topicId,
+        topicName: (TOPICS.find(t => t.id === state.topicId) || {}).name || '全关卡',
+        total: handledTotal,
+        correct: handledCorrect,
+        wrong: handledWrong,
+        duration: Date.now() - state.startTime,
+        wrongList: state.wrongQuestions || [],
+        ts: Date.now()
+      };
+    }
+    // 否则用 localStorage 累计（来自之前的关卡）
+    const p = loadProgress();
+    let total = 0, correct = 0;
+    const topicNames = [];
+    Object.entries(p.byTopic || {}).forEach(([tId, t]) => {
+      if (t.done > 0) {
+        total += t.done;
+        correct += t.correct;
+        const tn = (TOPICS.find(tp => tp.id === tId) || {}).name || tId;
+        if (!topicNames.includes(tn)) topicNames.push(tn);
+      }
+    });
+    if (total === 0) return null;
+    return {
+      kind: 'progress',
+      topicId: 'mixed',
+      topicName: topicNames.length ? topicNames.join('、') : '累计练习',
+      total,
+      correct,
+      wrong: total - correct,
+      duration: 0, // 跨多关时不好算总时长
+      wrongList: p.wrongList || [],
+      ts: Date.now()
+    };
+  }
+
+  function buildReport() {
+    const src = _getReportSource();
+    if (!src) return null;
+    return {
+      v: 1,
+      name: state.studentName || '',
+      ts: src.ts,
+      topicId: src.topicId,
+      topicName: src.topicName,
+      total: src.total,
+      correct: src.correct,
+      wrong: src.wrong,
+      duration: src.duration,
+      wrongList: (src.wrongList || []).map(w => ({
+        id: w.id,
+        topicId: w.topicId,
+        topicName: (TOPICS.find(t => t.id === w.topicId) || {}).name || '',
+        prompt: (w.prompt || '').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' '),
+        userAns: w.userAns,
+        rightAns: w.rightAns
+      }))
+    };
+  }
+
+  // 任何时候都能调用的"提交成绩"入口
+  function openSubmitReportModal() {
+    const src = _getReportSource();
+    if (!src || src.total === 0) {
+      // 还没做过题：提示一下
+      showToast('你还没做题呢～先去闯一关吧！');
+      return;
+    }
+    openReportModal();
+  }
+
+  function openReportModal() {
+    const modal = document.getElementById('report-mask');
+    if (!modal) return;
+    // 第一次打开：让用户填名字（可选）
+    const inputWrap = document.getElementById('report-name-input');
+    const nameInput = document.getElementById('report-name');
+    if (inputWrap && nameInput) {
+      inputWrap.style.display = '';
+      nameInput.value = state.studentName || '';
+      nameInput.focus();
+    }
+    document.getElementById('report-code-area').style.display = 'none';
+    document.getElementById('report-qr').innerHTML = '';
+    document.getElementById('report-generate').onclick = generateAndShowReport;
+    document.getElementById('report-close').onclick = closeReportModal;
+    const close2 = document.getElementById('report-close-2');
+    if (close2) close2.onclick = closeReportModal;
+    // 标题根据场景动态变化
+    const src = _getReportSource();
+    const titleEl = modal.querySelector('.modal-header h2');
+    const tagEl = modal.querySelector('.modal-badge');
+    if (!src) {
+      if (titleEl) titleEl.textContent = '你还没做题呢';
+      if (tagEl) tagEl.innerHTML = '⚠️ 提示';
+      return;
+    }
+    if (titleEl) {
+      if (src.kind === 'session-partial') titleEl.textContent = `做完 ${src.total} 题，先提交一下？`;
+      else if (src.kind === 'session-done') titleEl.textContent = '把本关成绩发给老师';
+      else if (src.kind === 'progress') titleEl.textContent = '把累计成绩发给老师';
+      else titleEl.textContent = '把成绩发给老师';
+    }
+    if (tagEl) {
+      if (src.kind === 'session-partial') tagEl.innerHTML = '<i class="fa-solid fa-hourglass-half"></i> 部分成绩';
+      else if (src.kind === 'session-done') tagEl.innerHTML = '📤 成绩单';
+      else if (src.kind === 'progress') tagEl.innerHTML = '<i class="fa-solid fa-layer-group"></i> 累计成绩单';
+      else tagEl.innerHTML = '📤 成绩单';
+    }
+    modal.hidden = false;
+  }
+
+  // 简单的顶部浮提示
+  function showToast(text) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = text;
+    document.body.appendChild(t);
+    setTimeout(() => t.classList.add('show'), 10);
+    setTimeout(() => {
+      t.classList.remove('show');
+      setTimeout(() => t.remove(), 300);
+    }, 2200);
+  }
+  function closeReportModal() {
+    const modal = document.getElementById('report-mask');
+    if (modal) modal.hidden = true;
+  }
+  function generateAndShowReport() {
+    const nameInput = document.getElementById('report-name');
+    if (nameInput) state.studentName = nameInput.value.trim();
+    const report = buildReport();
+    const code = window.PyListApp.encodeReport(report);
+    const codeArea = document.getElementById('report-code-area');
+    const codeText = document.getElementById('report-code-text');
+    codeText.value = code;
+    codeArea.style.display = '';
+    document.getElementById('report-name-input').style.display = 'none';
+
+    // 二维码（如果库加载失败也不影响）
+    try {
+      const qrEl = document.getElementById('report-qr');
+      qrEl.innerHTML = '';
+      if (typeof window.qrcode === 'function') {
+        // qrcode-generator 库：先按数据长度估算 typeNumber
+        const len = code.length;
+        let typeNumber = 0; // 0 = 自动
+        const qr = window.qrcode(typeNumber, 'M');
+        qr.addData(code);
+        qr.make();
+        // 用 SVG 渲染（清晰、可缩放、不依赖 canvas）
+        qrEl.innerHTML = qr.createSvgTag({ cellSize: 6, margin: 4, scalable: true });
+      } else {
+        qrEl.innerHTML = '<div style="color:#9ca3af;font-size:13px;">二维码库未加载（仍可复制文本编码）</div>';
+      }
+    } catch (err) {
+      console.warn('QR 异常:', err);
+    }
+
+    // 复制按钮
+    const copyBtn = document.getElementById('report-copy');
+    if (copyBtn) {
+      copyBtn.onclick = () => {
+        codeText.select();
+        try {
+          navigator.clipboard.writeText(code).then(() => {
+            copyBtn.textContent = '✅ 已复制';
+            setTimeout(() => { copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> 复制编码'; }, 1500);
+          }).catch(() => {
+            document.execCommand('copy');
+            copyBtn.textContent = '✅ 已复制';
+            setTimeout(() => { copyBtn.innerHTML = '<i class="fa-regular fa-copy"></i> 复制编码'; }, 1500);
+          });
+        } catch { /* ignore */ }
+      };
+    }
   }
 
   // ============ 视图：错题本 ============
@@ -430,6 +682,36 @@
       if (r === 'review') navigate('#/review');
     });
   });
+  // 顶部"提交成绩"按钮：任何页面都能用
+  const navSubmit = document.getElementById('nav-submit');
+  if (navSubmit) {
+    navSubmit.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openSubmitReportModal();
+    });
+  }
+
+  // 页脚"重置进度"按钮：发网址给学生前点这个
+  const resetBtn = document.getElementById('footer-reset');
+  if (resetBtn) {
+    resetBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (!confirm('确定要清空当前设备上的所有练习记录吗？\n\n这个操作不可撤销！\n（建议在把网址发给学生前点这个）')) return;
+      // 清掉所有相关 key
+      try { localStorage.removeItem('py_list_quiz_progress_v1'); } catch (e) {}
+      try { localStorage.removeItem('py_list_quiz_teacher_v1'); } catch (e) {}
+      try { localStorage.removeItem('py_list_quiz_teacher_session'); } catch (e) {}
+      try { sessionStorage.clear(); } catch (e) {}
+      // 重置内存 state
+      state = Object.assign(state, {
+        route: 'map', currentIdx: 0, questions: [], correctCount: 0,
+        wrongQuestions: [], topicId: 'all', startTime: 0, endTime: 0,
+        submitted: false, studentName: ''
+      });
+      showToast('已重置！页面即将刷新…');
+      setTimeout(() => location.reload(), 800);
+    });
+  }
 
   // ============ 烟花庆祝 ============
   function launchConfetti() {

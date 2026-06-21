@@ -53,7 +53,7 @@
         { key: 'A', text: '1 种' },
         { key: 'B', text: '2 种' },
         { key: 'C', text: '3 种' },
-        { key: 'D', text: '4 种' }
+        { key: 'D', text: '<strong>4 种</strong>' }
       ],
       answer: ['D'],
       explain: {
@@ -85,77 +85,76 @@
     {
       id: 'i1', topicId: 'indexing', type: 'single', difficulty: 1,
       prompt: '执行下面的代码，输出结果是？',
-      code: 'a = [\'a\', \'b\', \'c\', \'d\']\nprint(a[0])',
+      code: 'a = [10, 20, 30, 40]\nprint(a[0])',
       options: [
-        { key: 'A', text: "<strong>'a'</strong>" },
-        { key: 'B', text: "'b'" },
-        { key: 'C', text: "'c'" },
-        { key: 'D', text: "'d'" }
+        { key: 'A', text: '<strong>10</strong>' },
+        { key: 'B', text: '20' },
+        { key: 'C', text: '30' },
+        { key: 'D', text: '40' }
       ],
       answer: ['A'],
       explain: {
-        reason: '正向索引从 <span class="ic">0</span> 开始数！第 1 个元素的索引是 0，所以 <span class="ic">a[0]</span> 是第一个元素 <span class="ic">\'a\'</span>。',
+        reason: '正向索引从 <span class="ic">0</span> 开始数！第 1 个元素的索引是 0，所以 <span class="ic">a[0]</span> 是第一个元素 <span class="ic">10</span>。',
         diagram: 'indexing',
-        diagramData: { list: ['a', 'b', 'c', 'd'], highlight: 0, label: 'a[0]' },
+        diagramData: { list: [10, 20, 30, 40], highlight: 0, label: 'a[0]' },
         knowledge: '<h4>📚 重要：索引从 0 开始</h4>第 1 个 → 索引 0<br>第 2 个 → 索引 1<br>第 3 个 → 索引 2<br>第 n 个 → 索引 n-1'
       }
     },
     {
       id: 'i2', topicId: 'indexing', type: 'single', difficulty: 2,
       prompt: '反向索引，<span class="ic">a[-1]</span> 指的是哪个元素？',
-      code: 'a = [\'a\', \'b\', \'c\', \'d\']',
+      code: 'a = [10, 20, 30, 40]',
       options: [
-        { key: 'A', text: "'a'" },
-        { key: 'B', text: "'b'" },
-        { key: 'C', text: "'c'" },
-        { key: 'D', text: "<strong>'d'</strong>" }
+        { key: 'A', text: '10' },
+        { key: 'B', text: '20' },
+        { key: 'C', text: '30' },
+        { key: 'D', text: '<strong>40</strong>' }
       ],
       answer: ['D'],
       explain: {
-        reason: '反向索引从 <span class="ic">-1</span> 开始，倒着数！最后一个元素是 <span class="ic">-1</span>，倒数第二个是 <span class="ic">-2</span>。',
+        reason: '<span class="ic">-1</span> 表示倒数第 <strong>1</strong> 个，所以是最后一个 <span class="ic">40</span>。',
         diagram: 'indexing',
-        diagramData: { list: ['a', 'b', 'c', 'd'], highlight: -1, label: 'a[-1]' },
-        knowledge: '<h4>📚 反向索引表</h4>最后一个 → -1<br>倒数第二 → -2<br>倒数第三 → -3<br>第一个 → -len(列表)'
+        diagramData: { list: [10, 20, 30, 40], highlight: 3, label: 'a[-1]' },
+        knowledge: '<h4>📚 反向索引规则</h4>a[-1] → 最后一个<br>a[-2] → 倒数第二个<br>a[-n] → 倒数第 n 个'
       }
     },
     {
       id: 'i3', topicId: 'indexing', type: 'single', difficulty: 2,
       prompt: '那 <span class="ic">a[-2]</span> 是哪个元素？',
-      code: 'a = [\'a\', \'b\', \'c\', \'d\']',
+      code: 'a = [10, 20, 30, 40]',
       options: [
-        { key: 'A', text: "'a'" },
-        { key: 'B', text: "<strong>'b'</strong>" },
-        { key: 'C', text: "'c'" },
-        { key: 'D', text: "'d'" }
+        { key: 'A', text: '10' },
+        { key: 'B', text: '20' },
+        { key: 'C', text: '<strong>30</strong>' },
+        { key: 'D', text: '40' }
       ],
-      answer: ['B'],
+      answer: ['C'],
       explain: {
-        reason: '<span class="ic">-1</span> 是 d，<span class="ic">-2</span> 就是倒数第二个 <span class="ic">\'b\'</span>！',
+        reason: '<span class="ic">-2</span> 表示倒数第 <strong>2</strong> 个，所以是 <span class="ic">30</span>。',
         diagram: 'indexing',
-        diagramData: { list: ['a', 'b', 'c', 'd'], highlight: -2, label: 'a[-2]' },
-        knowledge: '<h4>📚 小口诀</h4>正向从 0 开始往右数，反向从 -1 开始往左数。<br>同一个元素可能有两种写法，比如 a[0] 和 a[-4] 都指 \'a\'。'
+        diagramData: { list: [10, 20, 30, 40], highlight: 2, label: 'a[-2]' },
+        knowledge: '<h4>📚 正反索引对应</h4>索引 0 ↔ 索引 -4（最左↔最右）<br>索引 1 ↔ 索引 -3<br>索引 2 ↔ 索引 -2<br>索引 3 ↔ 索引 -1'
       }
     },
     {
       id: 'i4', topicId: 'indexing', type: 'single', difficulty: 2,
       prompt: '<span class="ic">a[2]</span> 的值是？',
-      code: 'a = [\'a\', \'b\', \'c\', \'d\']',
+      code: 'a = [5, 15, 25, 35]',
       options: [
-        { key: 'A', text: "'a'" },
-        { key: 'B', text: "'b'" },
-        { key: 'C', text: "<strong>'c'</strong>" },
-        { key: 'D', text: "'d'" }
+        { key: 'A', text: '5' },
+        { key: 'B', text: '15' },
+        { key: 'C', text: '<strong>25</strong>' },
+        { key: 'D', text: '35' }
       ],
       answer: ['C'],
       explain: {
-        reason: '索引 0→a, 1→b, 2→c, 3→d。所以 <span class="ic">a[2]</span> 是 <span class="ic">\'c\'</span>。',
+        reason: '索引 2 指的是第 <strong>3</strong> 个元素（从 0 开始数），所以是 <span class="ic">25</span>。',
         diagram: 'indexing',
-        diagramData: { list: ['a', 'b', 'c', 'd'], highlight: 2, label: 'a[2]' },
-        knowledge: '<h4>📚 索引图示</h4>正向:  0   1   2   3<br>元素:  a   b   c   d<br>反向: -4  -3  -2  -1'
+        diagramData: { list: [5, 15, 25, 35], highlight: 2, label: 'a[2]' },
+        knowledge: '<h4>📚 数数小口诀</h4>a[0] = 第一个，a[1] = 第二个… a[n-1] = 第 n 个'
       }
     },
-
-    // ========== 3. 创建列表 ==========
+        // ========== 3. 创建列表 ==========
     {
       id: 'c1', topicId: 'create', type: 'single', difficulty: 1,
       prompt: '下面哪一种写法能创建一个<strong>空列表</strong>？',
@@ -231,8 +230,8 @@
       id: 'a2', topicId: 'append', type: 'single', difficulty: 2,
       prompt: '关于 <span class="ic">append()</span> 方法，下面哪个说法<strong>不对</strong>？',
       options: [
-        { key: 'A', text: '可以把元素插入到任意位置' },
-        { key: 'B', text: '只能把元素添加到列表<strong>末尾</strong>' },
+        { key: 'A', text: '<strong>可以把元素插入到任意位置</strong>' },
+        { key: 'B', text: '只能把元素添加到列表末尾' },
         { key: 'C', text: '一次只能添加一个元素' },
         { key: 'D', text: '会直接修改原列表' }
       ],
@@ -393,7 +392,7 @@
       id: 'm3', topicId: 'modify', type: 'judge', difficulty: 1,
       prompt: '"修改列表元素"的本质，是给指定索引的元素<strong>重新赋值</strong>。✅ 还是 ❌？',
       options: [
-        { key: 'A', text: '✅ 对' },
+        { key: 'A', text: '<strong>✅ 对</strong>' },
         { key: 'B', text: '❌ 错' }
       ],
       answer: ['A'],
@@ -534,7 +533,7 @@
       id: 't4', topicId: 'traverse', type: 'judge', difficulty: 1,
       prompt: '<span class="ic">for i in a:</span> 中，<span class="ic">i</span> 默认代表<strong>元素</strong>。✅ 还是 ❌？',
       options: [
-        { key: 'A', text: '✅ 对' },
+        { key: 'A', text: '<strong>✅ 对</strong>' },
         { key: 'B', text: '❌ 错（i 是索引）' }
       ],
       answer: ['A'],
@@ -860,6 +859,9 @@
 
   // ============ 进度持久化 ============
   const STORAGE_KEY = 'py_list_quiz_progress_v1';
+  const TEACHER_SESSION_KEY = 'py_list_quiz_teacher_session';   // sessionStorage
+  const TEACHER_LIST_KEY = 'py_list_quiz_teacher_list_v1';       // localStorage
+  const TEACHER_PASSWORD = 'wlin1997';                            // 老师后台密码（在 data.js 顶部即可改）
   function loadProgress() {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
@@ -872,6 +874,51 @@
     catch (err) { console.error('localStorage 保存失败:', err); return false; }
   }
 
+  // 老师后台数据：已收录的学生报告
+  function loadTeacherList() {
+    try {
+      const raw = localStorage.getItem(TEACHER_LIST_KEY);
+      if (!raw) return [];
+      return JSON.parse(raw);
+    } catch { return []; }
+  }
+  function saveTeacherList(arr) {
+    try { localStorage.setItem(TEACHER_LIST_KEY, JSON.stringify(arr)); return true; }
+    catch (err) { console.error('老师列表保存失败:', err); return false; }
+  }
+  // 老师会话：本次浏览器有效，关掉就退出
+  function isTeacherLoggedIn() {
+    try { return sessionStorage.getItem(TEACHER_SESSION_KEY) === '1'; } catch { return false; }
+  }
+  function setTeacherLoggedIn(ok) {
+    try {
+      if (ok) sessionStorage.setItem(TEACHER_SESSION_KEY, '1');
+      else sessionStorage.removeItem(TEACHER_SESSION_KEY);
+    } catch {}
+  }
+
+  // 编码 / 解码成绩单
+  // 数据比较短，用简单的 base64 即可（前缀 PYQ1 方便识别）
+  function encodeReport(report) {
+    const json = JSON.stringify(report);
+    const b64 = btoa(unescape(encodeURIComponent(json)));
+    return 'PYQ1:' + b64;
+  }
+  function decodeReport(code) {
+    if (!code) return null;
+    code = code.trim();
+    if (code.startsWith('PYQ1:')) code = code.slice(5);
+    try {
+      const json = decodeURIComponent(escape(atob(code)));
+      const obj = JSON.parse(json);
+      if (typeof obj !== 'object' || !obj.v) throw new Error('格式错误');
+      return obj;
+    } catch (err) {
+      console.warn('解码失败:', err);
+      return null;
+    }
+  }
+
   // 暴露到全局
   window.PyListApp = window.PyListApp || {};
   window.PyListApp.TOPICS = TOPICS;
@@ -879,4 +926,11 @@
   window.PyListApp.getQuestionsByTopic = getQuestionsByTopic;
   window.PyListApp.loadProgress = loadProgress;
   window.PyListApp.saveProgress = saveProgress;
+  window.PyListApp.TEACHER_PASSWORD = TEACHER_PASSWORD;
+  window.PyListApp.loadTeacherList = loadTeacherList;
+  window.PyListApp.saveTeacherList = saveTeacherList;
+  window.PyListApp.isTeacherLoggedIn = isTeacherLoggedIn;
+  window.PyListApp.setTeacherLoggedIn = setTeacherLoggedIn;
+  window.PyListApp.encodeReport = encodeReport;
+  window.PyListApp.decodeReport = decodeReport;
 })();

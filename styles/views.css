@@ -262,6 +262,15 @@
   transform: translateX(4px);
 }
 .option:hover::before { background: var(--c-primary); color: #fff; }
+/* 点击瞬间闪烁动画：让用户能立刻看到点中了 */
+@keyframes optFlash {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(0.96); box-shadow: 0 0 0 6px rgba(99,102,241,0.18); }
+  100% { transform: scale(1); }
+}
+.option:active {
+  animation: optFlash 0.25s ease;
+}
 .option.selected {
   border-color: var(--c-primary);
   background: var(--c-primary-light);
