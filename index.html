@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="styles/main.css" />
   <link rel="stylesheet" href="styles/views.css" />
   <link rel="stylesheet" href="styles/diagram.css" />
+  <link rel="stylesheet" href="styles/teacher.css" />
 </head>
 <body>
   <!-- 顶部导航 -->
@@ -22,11 +23,21 @@
     <nav class="top-nav">
       <button class="nav-btn active" data-route="map"><i class="fa-solid fa-map"></i> 知识地图</button>
       <button class="nav-btn" data-route="review"><i class="fa-solid fa-bookmark"></i> 错题本</button>
+      <button class="nav-btn nav-btn-submit" id="nav-submit" title="任何时候都能提交成绩"><i class="fa-solid fa-paper-plane"></i> 提交成绩</button>
     </nav>
   </header>
 
   <!-- 主舞台 -->
   <main id="stage"></main>
+
+  <!-- 页脚（含低调的老师入口） -->
+  <footer class="page-footer">
+    <span>© Python 列表闯关</span>
+    <a href="javascript:void(0)" class="footer-reset" id="footer-reset" title="清空当前设备的练习记录（在把网址发给学生前点这个）">
+      <i class="fa-solid fa-rotate-left"></i> 重置进度
+    </a>
+    <a href="#/teacher" class="teacher-link" title="老师入口"><i class="fa-solid fa-chalkboard-user"></i> 老师</a>
+  </footer>
 
   <!-- 烟花层 -->
   <div id="confetti-layer" aria-hidden="true"></div>
@@ -50,10 +61,47 @@
     </div>
   </div>
 
+  <!-- 模态层：生成成绩单 -->
+  <div id="report-mask" class="modal-mask" hidden>
+    <div class="modal-box report-box" role="dialog" aria-modal="true">
+      <button class="modal-close" id="report-close" aria-label="关闭"><i class="fa-solid fa-xmark"></i></button>
+      <div class="modal-header">
+        <span class="modal-badge" style="background:linear-gradient(135deg,#F97316,#EC4899);color:#fff;">📤 成绩单</span>
+        <h2>把成绩发给老师</h2>
+      </div>
+      <div class="modal-body">
+        <div id="report-name-input" class="report-name-input">
+          <label>学生姓名（可选）</label>
+          <input type="text" id="report-name" placeholder="例：小明（不填也行）" maxlength="20" />
+          <p class="hint">填上后，老师后台能直接看到是哪个学生。</p>
+        </div>
+        <div id="report-code-area" class="report-code-area" style="display:none;">
+          <div class="report-qr-wrap">
+            <div id="report-qr" class="report-qr"></div>
+            <p class="hint">用微信扫一扫，截图发给老师。</p>
+          </div>
+          <div class="report-text-wrap">
+            <label>编码</label>
+            <textarea id="report-code-text" readonly rows="4"></textarea>
+            <button class="btn btn-primary" id="report-copy" style="margin-top:8px;"><i class="fa-regular fa-copy"></i> 复制编码</button>
+            <p class="hint">或直接发这一串字符给老师（粘贴即可识别）。</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content:space-between;">
+        <button class="btn btn-ghost" id="report-close-2">关闭</button>
+        <button class="btn btn-primary" id="report-generate" style="background:linear-gradient(135deg,#F97316,#EC4899);color:#fff;">生成成绩单 <i class="fa-solid fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第三方库：QR 码（CDN 加载失败也不影响复制编码） -->
+  <script src="https://unpkg.com/qrcode-generator@1.4.4/qrcode.js" onerror="console.warn('QR 库加载失败')"></script>
   <!-- 脚本 -->
   <script src="scripts/highlight.js"></script>
   <script src="scripts/data.js"></script>
   <script src="scripts/diagram.js"></script>
   <script src="scripts/app.js"></script>
+  <script src="scripts/teacher.js"></script>
 </body>
 </html>
