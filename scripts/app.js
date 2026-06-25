@@ -290,6 +290,23 @@
       document.getElementById('btn-explain').style.display = 'inline-flex';
       document.getElementById('btn-next').style.display = 'inline-flex';
       document.getElementById('btn-explain').textContent = isCorrect ? '📖 看看解析' : '💡 看图解，搞懂它';
+
+      // 答完一题立即持久化：保证首页累计进度/错题本/重置进度 都及时更新
+      try {
+        const p = loadProgress();
+        p.byTopic = p.byTopic || {};
+        const tId = q.topicId;
+        if (!p.byTopic[tId]) p.byTopic[tId] = { done: 0, correct: 0 };
+        p.byTopic[tId].done = (p.byTopic[tId].done || 0) + 1;
+        if (isCorrect) p.byTopic[tId].correct = (p.byTopic[tId].correct || 0) + 1;
+        if (!isCorrect) {
+          p.wrongList = p.wrongList || [];
+          p.wrongList.push({ id: q.id, topicId: q.topicId, prompt: q.prompt, userAns: [...userKeys], rightAns: [...correctKeys], code: q.code, ts: Date.now() });
+          if (p.wrongList.length > 200) p.wrongList = p.wrongList.slice(-200);
+        }
+        const ok = saveProgress(p);
+        console.log('[onSubmit] 立即保存进度 ok=' + ok + ', byTopic[' + tId + ']=' + JSON.stringify(p.byTopic[tId]) + ', wrongList总数=' + (p.wrongList || []).length);
+      } catch (e) { console.error('onSubmit 保存进度失败:', e); }
     } catch (err) {
       console.error('onSubmit 异常:', err);
     }
@@ -437,7 +454,7 @@
         total: handledTotal,
         correct: handledCorrect,
         wrong: handledWrong,
-        duration: Date.now() - state.startTime,
+        duration: Math.round((Date.now() - state.startTime) / 1000),  // 单位：秒
         wrongList: state.wrongQuestions || [],
         ts: Date.now()
       };
