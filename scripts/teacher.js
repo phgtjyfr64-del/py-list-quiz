@@ -312,4 +312,16 @@
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
   }
+
+  // 脚本加载完时，如果当前路由已经是 teacher，立即渲染一次
+  if (/^#\/teacher/.test(window.location.hash || '')) {
+    tryHandleTeacherRoute('teacher');
+  }
+  // 之后路由变化也要拦截（app.js 内部会先调用 tryHandleTeacherRoute；
+  // 但如果 teacher.js 比 app.js 后到，加载初次的 hashchange 可能错过）
+  window.addEventListener('hashchange', () => {
+    if (/^#\/teacher/.test(window.location.hash || '')) {
+      tryHandleTeacherRoute('teacher');
+    }
+  });
 })();
